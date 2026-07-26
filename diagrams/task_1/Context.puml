@@ -1,0 +1,13 @@
+@startuml
+!ROUNDED_STYLE=1
+!include <C4/C4_Context>
+!include <logos/go>
+LAYOUT_TOP_DOWN()
+
+Person(user, "Владелец дома", "Просматривает температуру, управляет отоплением")
+
+System(main_system, "Тёплый дом", "Система Тёплый дом", "go")
+
+Rel(user, main_system, "Просматривает показания датчиков, меняет значение температуры", "HTTPS / REST API")
+
+@enduml
