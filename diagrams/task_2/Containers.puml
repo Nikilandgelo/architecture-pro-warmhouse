@@ -1,0 +1,69 @@
+@startuml
+!ROUNDED_STYLE=1
+!include <C4/C4_Container>
+!include <logos/react>
+!include <logos/postgresql>
+!include <logos/nats>
+LAYOUT_TOP_DOWN()
+
+Person(user, "Владелец умного дома", "Управляет модулями умного дома через веб-интерфейс")
+System_Ext(smart_device, "Система умных устройств", "Физические устройства партнера установленные у владельцев в домах")
+
+
+System_Boundary(main_system, "Тёплый дом") {
+    Container(frontend, "Smart House Modules Management", "TypeScript, React", "Веб панель управления устройствами", react)
+
+    Container(api_gateway, "API Gateway", "Apache APISIX", "Единая точка входа запросов, маршутизация до нужных сервисов, работа с JWT токенами")
+    Container(keycloak, "Identity Provider", "Keycloak", "Управление пользователями, аутентификация, выдача JWT токенов")
+
+    ContainerDb(devices_postgresql, "Database", "PostgreSQL", "", postgresql)
+    ContainerDb(automations_postgresql, "Database", "PostgreSQL", "", postgresql)
+    ContainerDb(click, "Column oriented database", "Clickhouse", "")
+    ContainerDb(s3_storage, "Object Storage", "S3", "Хранение архивных видеозаписей")
+
+    ContainerQueue(nats, "Message Broker", "Nats", "", nats)
+
+    Container(device_management, "Device Management Service", "", "Инкапсулирует адаптеры под различные протоколы для взаимодействия с устройствами партнеров, тип протокола определяется при регистрации устройства.")
+    Container(telemetry, "Telemetry Service")
+    Container(video_monitoring, "Video Monitoring Service")
+    Container(automation_engine, "Automation Engine Service", "", "Автоматизированные сценарии работы исходя из триггеров (время, событие и т.д)")
+}
+
+
+
+' Пользователь и устройства
+Rel(user, frontend, "Взаимодействует с UI", "HTTPS")
+Rel(frontend, api_gateway, "API запросы (при наличии передача Cookie ранее полученного после ответа от APISIX)", "HTTPS")
+Rel(smart_device, api_gateway, "Отправляет показания телеметрии", "REST API")
+Rel_L(api_gateway, keycloak, "Аутентификация (Redirect), обмен кодов на JWT токены", "HTTPS")
+
+
+
+' Device Management
+Rel(api_gateway, device_management, "Регистрация новых устройств, Просмотр и Деактивация устройств, Смена текущего статуса и показателей устройств", "REST API")
+Rel(device_management, devices_postgresql, "DB Queries", "SQL")
+Rel(device_management, smart_device, "Управление умными устройствами", Various)
+Rel_D(device_management, nats, "Consume commands for devices to perform")
+
+
+
+' Telemetry
+Rel(api_gateway, telemetry, "Просмотр и запись показаний устройств", "REST API")
+Rel(telemetry, click, "DB Queries", "SQL")
+Rel_D(telemetry, nats, "Produce telemetry events for automation")
+
+
+
+' Video Monitoring
+Rel(api_gateway, video_monitoring, "Просмотр live-потока видеокамер и запись/запрос видеоархива", "WebSockets / REST API")
+Rel(video_monitoring, smart_device, "Получение видеопотока с камер", "WebRTC")
+Rel(video_monitoring, s3_storage, "Сохранение и получение видеозаписей из архива", "S3 API")
+
+
+
+' Automation Engine
+Rel(api_gateway, automation_engine, "Создание, Редактирование, Просмотр сценариев работы устройств", "REST API")
+Rel(automation_engine, automations_postgresql, "DB Queries", "SQL")
+Rel_D(automation_engine, nats, "Consume telemetry events & Produce commands for devices to perform")
+
+@enduml
