@@ -1,0 +1,83 @@
+@startuml
+!ROUNDED_STYLE=1
+!include <C4/C4_Container>
+!include <logos/react>
+!include <logos/postgresql>
+!include <logos/nats>
+LAYOUT_TOP_DOWN()
+
+
+AddRelTag("api_route", $textColor="cornflowerblue", $lineColor="cornflowerblue", $lineStyle = BoldLine())
+AddRelTag("storage_route", $textColor="seagreen", $lineColor="seagreen", $lineStyle = DottedLine())
+AddRelTag("broker_routes", $textColor="firebrick", $lineColor="firebrick", $lineStyle = SolidLine())
+AddRelTag("device_interaction", $textColor="mediumseagreen", $lineColor="mediumseagreen", $lineStyle = BoldLine())
+AddRelTag("kv_route", $textColor="darkorange", $lineColor="darkorange", $lineStyle = DashedLine())
+
+
+
+Person(user, "Владелец умного дома", "Управляет модулями умного дома через веб-интерфейс")
+System_Ext(smart_device, "Система умных устройств", "Физические устройства партнера установленные у владельцев в домах")
+
+
+System_Boundary(main_system, "Тёплый дом") {
+    Container(frontend, "Smart House Modules Management", "TypeScript, React", "Веб панель управления устройствами", react)
+
+    Container(api_gateway, "API Gateway", "Apache APISIX", "Единая точка входа запросов, маршутизация до нужных сервисов, работа с JWT токенами")
+    Container(keycloak, "Identity Provider", "Keycloak", "Управление пользователями, аутентификация, выдача JWT токенов")
+
+    ContainerDb(devices_postgresql, "Database", "PostgreSQL", "", postgresql)
+    ContainerDb(automations_postgresql, "Database", "PostgreSQL", "", postgresql)
+    ContainerDb(click, "Column oriented database", "Clickhouse", "")
+    ContainerDb(s3_storage, "Object Storage", "S3", "Хранение архивных видеозаписей")
+
+    ContainerQueue(nats, "Message Broker, Key & Value Store", "Nats", "", nats)
+
+    Container(device_management, "Device Management Service", "", "Инкапсулирует адаптеры под различные протоколы для взаимодействия с устройствами партнеров, тип протокола определяется при регистрации устройства")
+    Container(telemetry, "Telemetry Service")
+    Container(video_monitoring, "Video Monitoring Service")
+    Container(automation_engine, "Automation Engine Service", "", "Автоматизированные сценарии работы исходя из триггеров (время, событие и т.д)")
+}
+
+
+
+' Пользователь и устройства
+Rel(user, frontend, "Взаимодействует с UI", "HTTPS")
+Rel(frontend, api_gateway, "API запросы (при наличии передача Cookie ранее полученного после ответа от APISIX)", "HTTPS")
+Rel(smart_device, api_gateway, "Отправляет показания телеметрии", "REST API")
+Rel_U(api_gateway, keycloak, "Аутентификация (Redirect), обмен кодов на JWT токены", "HTTPS", $tags="api_route")
+
+
+
+' Device Management
+Rel(api_gateway, device_management, "CRUD устройств", "REST API", $tags="api_route")
+Rel(device_management, devices_postgresql, "DB Queries", "SQL", $tags="storage_route")
+Rel(device_management, smart_device, "Управление умными устройствами", Various, $tags="device_interaction")
+Rel_U(device_management, nats, "Consume commands for devices", $tags="broker_routes")
+Rel_U(device_management, nats, "Put device ownership", "NATS KV", $tags="kv_route")
+
+
+
+' Telemetry
+Rel(api_gateway, telemetry, "Просмотр и запись показаний устройств", "REST API", $tags="api_route")
+Rel(telemetry, click, "DB Queries", "SQL", $tags="storage_route")
+Rel_U(telemetry, nats, "Produce telemetry events for automation", $tags="broker_routes")
+Rel_U(telemetry, nats, "Check device ownership", "NATS KV", $tags="kv_route")
+
+
+
+' Video Monitoring
+Rel(api_gateway, video_monitoring, "Просмотр live-потока видеокамер и получение/скачивание видеоархива", "WebSockets / REST API", $tags="api_route")
+Rel(video_monitoring, smart_device, "Просмотр live-потока с камер", "WebRTC", $tags="device_interaction")
+Rel(video_monitoring, s3_storage, "Получение и скачивание видеозаписей из архива", "S3 API", $tags="storage_route")
+Rel_U(video_monitoring, nats, "Check device ownership", "NATS KV", $tags="kv_route")
+
+
+
+' Automation Engine
+Rel(api_gateway, automation_engine, "CRUD сценариев работы устройств", "REST API", $tags="api_route")
+Rel(automation_engine, automations_postgresql, "DB Queries", "SQL", $tags="storage_route")
+Rel_U(automation_engine, nats, "Consume telemetry events & Produce commands for devices", $tags="broker_routes")
+Rel_U(automation_engine, nats, "Check device ownership", "NATS KV", $tags="kv_route")
+
+
+@enduml

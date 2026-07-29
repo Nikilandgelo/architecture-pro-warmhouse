@@ -1,0 +1,60 @@
+@startuml
+!ROUNDED_STYLE=1
+!include <C4/C4_Component>
+!include <logos/nats>
+LAYOUT_TOP_DOWN()
+
+
+AddRelTag("api_route", $textColor="cornflowerblue", $lineColor="cornflowerblue", $lineStyle = BoldLine())
+AddRelTag("broker_routes", $textColor="firebrick", $lineColor="firebrick", $lineStyle = SolidLine())
+AddRelTag("storage_route", $textColor="seagreen", $lineColor="seagreen", $lineStyle = DottedLine())
+AddRelTag("kv_route", $textColor="darkorange", $lineColor="darkorange", $lineStyle = DashedLine())
+
+
+
+Container(api_gateway, "API Gateway", "Apache APISIX")
+ContainerQueue(nats, "Message Broker, Key & Value Store", "Nats", "", nats)
+ContainerDb(click, "Column oriented database", "Clickhouse", "")
+
+
+
+Container_Boundary(telemetry, "Telemetry Service") {
+    Component(telemetry_ingest_api, "Telemetry Ingest Controller", "FastAPI Router", "Приём показаний устройств")
+    Component(telemetry_query_api, "Telemetry Query Controller", "FastAPI Router", "Просмотр и агрегация показаний")
+
+
+    Component(ownership_dep, "Ownership Check Dependency", "FastAPI Depends", "Проверка владения устройством перед выдачей данных")
+
+
+    Component(telemetry_ingest_service, "Telemetry Ingest Service", "Python", "Валидация показаний, запись, публикация события телеметрии")
+    Component(telemetry_query_service, "Telemetry Query Service", "Python", "Просмотр и агрегация показаний")
+
+
+    Component(telemetry_repo, "Telemetry Repository", "clickhouse-connect (async)", "Запись/чтение показаний")
+    Component(telemetry_nats_publisher, "Telemetry Event Publisher", "NATS JetStream Publisher", "Публикация события телеметрии")
+}
+
+
+
+Rel(api_gateway, telemetry_ingest_api, "REST API", $tags="api_route")
+Rel(api_gateway, telemetry_query_api, "REST API", $tags="api_route")
+
+
+
+Rel(telemetry_query_api, ownership_dep, "Uses")
+Rel_R(ownership_dep, nats, "NATS KV: Get", $tags="kv_route")
+Rel(ownership_dep, telemetry_query_service, "Uses")
+Rel(telemetry_query_service, telemetry_repo, "Read", $tags="storage_route")
+
+
+
+Rel(telemetry_ingest_api, telemetry_ingest_service, "Uses")
+Rel(telemetry_ingest_service, telemetry_repo, "Write", $tags="storage_route")
+Rel(telemetry_ingest_service, telemetry_nats_publisher, "Publish", $tags="broker_routes")
+Rel_R(telemetry_nats_publisher, nats, "Produce", $tags="broker_routes")
+
+
+
+Rel(telemetry_repo, click, "SQL", $tags="storage_route")
+
+@enduml

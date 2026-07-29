@@ -1,0 +1,79 @@
+@startuml
+!ROUNDED_STYLE=1
+!include <C4/C4_Component>
+!include <logos/nats>
+!include <logos/postgresql>
+LAYOUT_TOP_DOWN()
+
+
+AddRelTag("api_route", $textColor="cornflowerblue", $lineColor="cornflowerblue", $lineStyle = BoldLine())
+AddRelTag("broker_routes", $textColor="firebrick", $lineColor="firebrick", $lineStyle = SolidLine())
+AddRelTag("storage_route", $textColor="seagreen", $lineColor="seagreen", $lineStyle = DottedLine())
+AddRelTag("device_interaction", $textColor="mediumseagreen", $lineColor="mediumseagreen", $lineStyle = BoldLine())
+AddRelTag("kv_route", $textColor="darkorange", $lineColor="darkorange", $lineStyle = DashedLine())
+
+
+Container(api_gateway, "API Gateway", "Apache APISIX")
+ContainerQueue(nats, "Message Broker, Key & Value Store", "Nats", "", nats)
+ContainerDb(devices_postgresql, "Database", "PostgreSQL", "", postgresql)
+System_Ext(smart_device, "Система умных устройств", "Физические устройства партнера установленные у владельцев в домах")
+
+
+
+Container_Boundary(device_management, "Device Management Service") {
+    Component(device_api, "Device REST Controller", "FastAPI Router", "Регистрация, просмотр, деактивация устройств, смена статуса и показателей устройств")
+    Component(device_nats_consumer, "Command Consumer", "NATS JetStream Consumer", "Забирает команды на взаимодействие с умными устройствами из брокера")
+
+
+    Component(device_lifecycle_service, "Device Lifecycle Service", "Python", "Бизнес-логика: проверка прав, CRUD устройства, синхронизация ownership KV")
+    Component(device_command_service, "Device Command Service", "Python", "Оркестрация исполнения команды: получение адаптера, взаимодействие с устройством")
+
+
+    Component(device_repo, "Device Repository", "SQLAlchemy (async)", "CRUD операций с устройствами")
+    Component(ownership_kv_client, "Ownership KV Client", "nats.py KV", "Put/Delete device_id -> owner_id при регистрации/деактивации")
+
+
+    Component(adapter_factory, "Protocol Adapter Factory", "Python", "Выбор нужного адаптера по типу устройства")
+    Component(mqtt_adapter, "MQTT Adapter", "Python", "Реализация протокола MQTT")
+    Component(rest_polling_adapter, "REST Polling Adapter", "Python", "")
+    Component(unknown_adapter, "Unknown Yet Adapter", "Python", "Реализация на текущий момент еще неизвестного протокола")
+}
+
+
+
+Rel(api_gateway, device_api, "REST API", $tags="api_route")
+Rel_U(nats, device_nats_consumer, "Consume on specific subject", $tags="broker_routes")
+
+
+
+Rel(device_api, device_lifecycle_service, "Uses")
+Rel(device_nats_consumer, device_command_service, "Uses")
+
+
+
+Rel(device_lifecycle_service, device_repo, "Query", $tags="storage_route")
+Rel(device_lifecycle_service, ownership_kv_client, "Put при регистрации, Delete при деактивации")
+
+
+
+Rel(device_command_service, device_repo, "Query device type from number", $tags="storage_route")
+Rel(device_command_service, adapter_factory, "Relative to the device type, take needed adapter")
+
+
+
+Rel(device_repo, devices_postgresql, "SQL", $tags="storage_route")
+Rel_U(ownership_kv_client, nats, "NATS KV: Put/Delete", $tags="kv_route")
+
+
+
+Rel(adapter_factory, mqtt_adapter, "Creates")
+Rel(adapter_factory, rest_polling_adapter, "Creates")
+Rel(adapter_factory, unknown_adapter, "Creates")
+
+
+
+Rel(mqtt_adapter, smart_device, "MQTT", $tags="device_interaction")
+Rel(rest_polling_adapter, smart_device, "REST API", $tags="device_interaction")
+Rel(unknown_adapter, smart_device, "Various", $tags="device_interaction")
+
+@enduml

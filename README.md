@@ -51,7 +51,7 @@
 количество.
 
 ### 5. Визуализация контекста системы — диаграмма С4
-[Диаграмма контекста в модели C4](./diagrams/task_1/Context.puml)
+[Диаграмма контекста в модели C4](./schemas/task_1/Context.puml)
 
 
 
@@ -61,13 +61,13 @@
 To-Be системы. Если вы правильно подготовите диаграммы C4, они и так это покажут.
 
 >**Диаграмма контейнеров (Containers)**:
-- [Диаграмма](./diagrams/task_2/Containers.puml)
+- [Диаграмма](./schemas/task_2/Containers.puml)
 
 >**Диаграмма компонентов (Components)**:
-- [Диаграмма микросервиса управления устройствами](./diagrams/task_2/DeviceManagementServiceComponent.puml)
-- [Диаграмма микросервиса сбора телеметрии](./diagrams/task_2/TelemetryServiceComponent.puml)
-- [Диаграмма микросервиса видеонаблюдения](./diagrams/task_2/VideoMonitoringServiceComponent.puml)
-- [Диаграмма микросервиса сценариев автоматизации](./diagrams/task_2/AutomationEngineServiceComponent.puml)
+- [Диаграмма микросервиса управления устройствами](./schemas/task_2/DeviceManagementServiceComponent.puml)
+- [Диаграмма микросервиса сбора телеметрии](./schemas/task_2/TelemetryServiceComponent.puml)
+- [Диаграмма микросервиса видеонаблюдения](./schemas/task_2/VideoMonitoringServiceComponent.puml)
+- [Диаграмма микросервиса сценариев автоматизации](./schemas/task_2/AutomationEngineServiceComponent.puml)
 
 
 ## Задание 3. Разработка ER-диаграммы
