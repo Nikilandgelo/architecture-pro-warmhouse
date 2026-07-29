@@ -53,7 +53,7 @@ Rel(api_gateway, device_management, "CRUD устройств", "REST API", $tags
 Rel(device_management, devices_postgresql, "DB Queries", "SQL", $tags="storage_route")
 Rel(device_management, smart_device, "Управление умными устройствами", Various, $tags="device_interaction")
 Rel_U(device_management, nats, "Consume commands for devices", $tags="broker_routes")
-Rel_U(device_management, nats, "Put device ownership", "NATS KV", $tags="kv_route")
+Rel_U(device_management, nats, "Put/Delete/Check device ownership", "NATS KV", $tags="kv_route")
 
 
 
