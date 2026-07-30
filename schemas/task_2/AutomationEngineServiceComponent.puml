@@ -43,7 +43,7 @@ Rel_D(nats, automation_nats_consumer, "Consume", $tags="broker_routes")
 
 
 Rel(automation_api, ownership_dep, "Uses")
-Rel_R(ownership_dep, nats, "NATS KV: Get", $tags="kv_route")
+Rel_R(ownership_dep, nats, "NATS KV: Get by serial_number", $tags="kv_route")
 Rel(ownership_dep, automation_crud_service, "Uses")
 Rel(automation_crud_service, automation_repo, "CRUD", $tags="storage_route")
 Rel(automation_repo, automations_postgresql, "SQL", $tags="storage_route")

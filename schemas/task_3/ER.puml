@@ -47,7 +47,7 @@ database "Device Management DB (PostgreSQL)" #E3F2FD {
       * installation_status : VARCHAR <<default active>>
       * activity_status : VARCHAR <<default off>>
       * location : VARCHAR
-      current_value : FLOAT
+      dynamic_target_value : FLOAT
     }
 }
 
@@ -60,9 +60,10 @@ database "Automation Engine DB (PostgreSQL)" #E3F2FD {
           * created_at : TIMESTAMP
           updated_at : TIMESTAMP
           is_deleted : BOOL
+          * is_enabled : BOOL <<default true>>
           * owner_id : UUID
           * name : VARCHAR
-          * serial_number : VARCHAR
+          * trigger_serial_number : VARCHAR
           * conditions : JSONB
         }
 
@@ -73,8 +74,8 @@ database "Automation Engine DB (PostgreSQL)" #E3F2FD {
         updated_at : TIMESTAMP
         is_deleted : BOOL
         * scenario_id : INT <<FK>>
-        * action_command : VARCHAR
         * target_serial_number : VARCHAR
+        * action_command : VARCHAR
     }
 }
 
@@ -99,10 +100,14 @@ scenarios ||--o{ scenarios_actions : "One to many"
 users ||..o{ devices : "owner_id (JWT sub, no FK)"
 users ||..o{ scenarios : "owner_id (JWT sub, no FK)"
 
-note right of scenarios_actions::action_command
-    Валидность команды для target_serial_number
-    проверяется через REST-вызов к Device Management Service
-    (allowed_commands по type_id устройства), не через схему БД
+devices ||..o{ telemetry_record : "device_serial_number (no FK)"
+devices ||..o{ scenarios_actions : "target_serial_number (no FK)"
+
+
+note left of scenarios_actions::action_command
+    Команда для target_serial_number достается
+    через REST-вызов фронта к Device Management Service
+    (allowed_commands по type_id target устройства)
 end note
 
 

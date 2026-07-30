@@ -42,7 +42,7 @@ Rel(api_gateway, telemetry_query_api, "REST API", $tags="api_route")
 
 
 Rel(telemetry_query_api, ownership_dep, "Uses")
-Rel_R(ownership_dep, nats, "NATS KV: Get", $tags="kv_route")
+Rel_R(ownership_dep, nats, "NATS KV: Get by serial_number", $tags="kv_route")
 Rel(ownership_dep, telemetry_query_service, "Uses")
 Rel(telemetry_query_service, telemetry_repo, "Read", $tags="storage_route")
 

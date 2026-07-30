@@ -37,7 +37,7 @@ Rel(api_gateway, video_api, "WebSockets / REST API", $tags="api_route")
 
 
 Rel(video_api, ownership_dep, "Uses")
-Rel_R(ownership_dep, nats, "NATS KV: Get", $tags="kv_route")
+Rel_R(ownership_dep, nats, "NATS KV: Get by serial_number", $tags="kv_route")
 Rel(ownership_dep, video_service, "Uses")
 
 

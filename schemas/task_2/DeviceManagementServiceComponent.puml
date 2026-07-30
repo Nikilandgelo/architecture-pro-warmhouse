@@ -25,21 +25,20 @@ Container_Boundary(device_management, "Device Management Service") {
     Component(device_nats_consumer, "Command Consumer", "NATS JetStream Consumer", "Забирает команды на взаимодействие с умными устройствами из брокера")
 
 
-    Component(ownership_dep, "Ownership Check Dependency", "FastAPI Depends", "Проверка владения устройством перед чтением/изменением/удалением (не применяется при списочном чтении и создании)")
+    Component(ownership_dep, "Ownership Check Dependency", "FastAPI Depends", "Проверка владения устройством перед чтением/изменением/удалением")
 
 
     Component(device_registry_service, "Device Registry Service", "Python", "Списочное чтение устройств, регистрация нового устройства, синхронизация ownership KV при регистрации")
-    Component(device_management_service, "Device Management Service", "Python",  "Чтение/изменение/деактивация конкретного устройства, синхронизация ownership KV при деактивации, делегирует физическое взаимодействие при смене activity_status/current_value")
+    Component(device_management_service, "Device Management Service", "Python",  "Чтение/изменение/деактивация конкретного устройства, синхронизация ownership KV при деактивации, делегирует физическое взаимодействие при смене activity_status/dynamic_target_value")
 
 
     Component(device_repo, "Device Repository", "SQLAlchemy (async)", "CRUD операций с устройствами")
-    Component(ownership_kv_client, "Ownership KV Client", "nats.py KV", "Put/Delete device_id -> owner_id при регистрации/деактивации")
+    Component(ownership_kv_client, "Ownership KV Client", "nats.py KV", "Put/Delete device serial_number -> owner_id при регистрации/деактивации")
 
 
-    Component(adapter_factory, "Protocol Adapter Factory", "Python", "Выбор нужного адаптера по типу устройства")
+    Component(adapter_factory, "Device Adapter (Protocol)", "Python", "Абстрактный адаптер с выбором необходимой реализации под устройство. Новые реализации протокола наследуются от него")
     Component(mqtt_adapter, "MQTT Adapter", "Python", "Реализация протокола MQTT")
-    Component(rest_polling_adapter, "REST Polling Adapter", "Python", "")
-    Component(unknown_adapter, "Unknown Yet Adapter", "Python", "Реализация на текущий момент еще неизвестного протокола")
+    Component(http_adapter, "HTTP Adapter", "Python", "Реализация протокола HTTP")
 }
 
 
@@ -53,7 +52,7 @@ Rel(device_api, device_registry_service, "Uses (списочное чтение,
 
 
 Rel(device_api, ownership_dep, "Uses (чтение/изменение/удаление конкретного устройства)")
-Rel_R(ownership_dep, nats, "NATS KV: Get", $tags="kv_route")
+Rel_R(ownership_dep, nats, "NATS KV: Get by serial_number", $tags="kv_route")
 Rel(ownership_dep, device_management_service, "Uses")
 
 
@@ -70,11 +69,11 @@ Rel(device_registry_service, ownership_kv_client, "Put при регистрац
 
 Rel(device_management_service, device_repo, "Query / Update", $tags="storage_route")
 Rel(device_management_service, ownership_kv_client, "Delete при деактивации")
-Rel_U(ownership_kv_client, nats, "NATS KV: Put/Delete", $tags="kv_route")
+Rel_U(ownership_kv_client, nats, "NATS KV: Put/Delete serial_number -> owner_id", $tags="kv_route")
 
 
 
-Rel(device_management_service, adapter_factory, "Uses (передаёт device + command) при апдейте activity_status/current_value")
+Rel(device_management_service, adapter_factory, "Uses (передаёт device + command) при апдейте activity_status/dynamic_target_value")
 
 
 
@@ -83,13 +82,11 @@ Rel(device_repo, devices_postgresql, "SQL", $tags="storage_route")
 
 
 Rel(adapter_factory, mqtt_adapter, "Creates")
-Rel(adapter_factory, rest_polling_adapter, "Creates")
-Rel(adapter_factory, unknown_adapter, "Creates")
+Rel(adapter_factory, http_adapter, "Creates")
 
 
 
 Rel(mqtt_adapter, smart_device, "MQTT", $tags="device_interaction")
-Rel(rest_polling_adapter, smart_device, "REST API", $tags="device_interaction")
-Rel(unknown_adapter, smart_device, "Various", $tags="device_interaction")
+Rel(http_adapter, smart_device, "HTTP", $tags="device_interaction")
 
 @enduml
