@@ -102,6 +102,7 @@ users ||..o{ scenarios : "owner_id (JWT sub, no FK)"
 
 devices ||..o{ telemetry_record : "device_serial_number (no FK)"
 devices ||..o{ scenarios_actions : "target_serial_number (no FK)"
+devices ||..o{ scenarios : "trigger_serial_number (no FK)"
 
 
 note left of scenarios_actions::action_command
