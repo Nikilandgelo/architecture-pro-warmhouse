@@ -19,7 +19,7 @@ ContainerDb(click, "Column oriented database", "Clickhouse", "")
 
 
 Container_Boundary(telemetry, "Telemetry Service") {
-    Component(telemetry_ingest_api, "Telemetry Ingest Controller", "FastAPI Router", "Приём показаний устройств")
+    Component(telemetry_ingest_api, "Telemetry Ingest Controller", "FastAPI Router", "Приём показаний устройств, эндпоинты проверяют токен авторизации от устройства")
     Component(telemetry_query_api, "Telemetry Query Controller", "FastAPI Router", "Просмотр и агрегация показаний")
 
 
