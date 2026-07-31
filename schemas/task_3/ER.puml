@@ -19,7 +19,7 @@ database "Device Management DB (PostgreSQL)" #E3F2FD {
       --
       * created_at : TIMESTAMP
       updated_at : TIMESTAMP
-      is_deleted : BOOL
+      * is_deleted : BOOL <<default false>>
       * command : VARCHAR
       * type_id : INT <<FK>>
     }
@@ -59,12 +59,12 @@ database "Automation Engine DB (PostgreSQL)" #E3F2FD {
           --
           * created_at : TIMESTAMP
           updated_at : TIMESTAMP
-          is_deleted : BOOL
+          * is_deleted : BOOL <<default false>>
           * is_enabled : BOOL <<default true>>
           * owner_id : UUID
           * name : VARCHAR
           * trigger_serial_number : VARCHAR
-          * conditions : JSONB
+          conditions : JSONB
         }
 
     entity "scenarios_actions" as scenarios_actions {
@@ -72,7 +72,7 @@ database "Automation Engine DB (PostgreSQL)" #E3F2FD {
         --
         * created_at : TIMESTAMP
         updated_at : TIMESTAMP
-        is_deleted : BOOL
+        * is_deleted : BOOL <<default false>>
         * scenario_id : INT <<FK>>
         * target_serial_number : VARCHAR
         * action_command : VARCHAR
