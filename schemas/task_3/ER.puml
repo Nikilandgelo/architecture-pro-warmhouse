@@ -48,6 +48,7 @@ database "Device Management DB (PostgreSQL)" #E3F2FD {
       * activity_status : VARCHAR <<default off>>
       * location : VARCHAR
       dynamic_target_value : FLOAT
+      metadata : JSONB
     }
 }
 

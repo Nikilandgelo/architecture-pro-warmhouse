@@ -28,7 +28,7 @@ Container_Boundary(device_management, "Device Management Service") {
     Component(ownership_dep, "Ownership Check Dependency", "FastAPI Depends", "Проверка владения устройством перед чтением/изменением/удалением")
 
 
-    Component(device_registry_service, "Device Registry Service", "Python", "Списочное чтение устройств, регистрация нового устройства, синхронизация ownership KV при регистрации")
+    Component(device_registry_service, "Device Registry Service", "Python", "Списочное чтение устройств пользователя, регистрация нового устройства, синхронизация ownership KV при регистрации")
     Component(device_management_service, "Device Management Service", "Python",  "Чтение/изменение/деактивация конкретного устройства, синхронизация ownership KV при деактивации, делегирует физическое взаимодействие при смене activity_status/dynamic_target_value")
 
 
@@ -47,7 +47,7 @@ Rel(api_gateway, device_api, "REST API", $tags="api_route")
 Rel_U(nats, device_nats_consumer, "Consume on specific subject", $tags="broker_routes")
 
 
-Rel(device_api, device_registry_service, "Uses (списочное чтение, создание устройства)")
+Rel(device_api, device_registry_service, "Uses (списочное чтение устройств пользователя, регистрация нового устройства)")
 
 
 
