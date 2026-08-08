@@ -30,9 +30,10 @@ database "Device Management DB (PostgreSQL)" #E3F2FD {
       * created_at : TIMESTAMP
       updated_at : TIMESTAMP
       * name : VARCHAR
+      * manufacturer : VARCHAR
       * interaction_protocol : VARCHAR
-      measurement_unit : VARCHAR <<default "%">>
-      * has_dynamic_values : BOOL
+      measurement_unit : VARCHAR
+      * has_dynamic_values : BOOL <<default false>>
     }
 
     entity "devices" as devices {
