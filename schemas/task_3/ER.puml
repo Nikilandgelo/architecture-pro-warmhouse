@@ -109,7 +109,7 @@ devices ||..o{ scenarios : "trigger_serial_number (no FK)"
 
 note left of scenarios_actions::action_command
     Команда для target_serial_number достается
-    через REST-вызов фронта к Device Management Service
+    через REST вызов фронта к Device Management Service
     (allowed_commands по type_id target устройства)
 end note
 
@@ -117,7 +117,7 @@ end note
 note right of device_types::has_dynamic_values
   Поддерживает ли тип устройства пользовательские
   настраиваемые значения. false — устройство без
-  настраиваемых параметров (только состояние on/off)
+  настраиваемых параметров
 end note
 
 footer PlantUML v.%version()
