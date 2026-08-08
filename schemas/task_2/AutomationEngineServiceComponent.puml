@@ -56,4 +56,5 @@ Rel(automation_trigger_service, automation_repo, "Check device scenarios", $tags
 Rel(automation_trigger_service, automation_nats_publisher, "Publish")
 Rel_U(automation_nats_publisher, nats, "Produce", $tags="broker_routes")
 
+footer PlantUML v.%version(), C4-PlantUML v.C4Version()
 @enduml

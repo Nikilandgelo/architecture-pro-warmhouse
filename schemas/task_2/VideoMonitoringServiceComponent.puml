@@ -51,4 +51,5 @@ Rel(signaling, smart_device, "WebRTC", $tags="device_interaction")
 Rel(smart_device, s3_storage, "Запись c видеокамер напрямую", $tags="device_interaction")
 Rel(archive_repo, s3_storage, "S3 API", $tags="storage_route")
 
+footer PlantUML v.%version(), C4-PlantUML v.C4Version()
 @enduml

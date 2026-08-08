@@ -13,4 +13,5 @@ System(main_system, "Тёплый дом", "Система умного дома
 Rel(user, main_system, "Регистрирует/деактивирует датчики, просматривает показания, меняет значение температуры/статус датчика")
 Rel(main_system, heat_devices, "Получает актуальные показания, осуществляет управление датчиком")
 
+footer PlantUML v.%version(), C4-PlantUML v.C4Version()
 @enduml

@@ -89,4 +89,5 @@ Rel(adapter_factory, http_adapter, "Creates")
 Rel(mqtt_adapter, smart_device, "MQTT", $tags="device_interaction")
 Rel(http_adapter, smart_device, "HTTP", $tags="device_interaction")
 
+footer PlantUML v.%version(), C4-PlantUML v.C4Version()
 @enduml

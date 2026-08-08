@@ -120,4 +120,5 @@ note right of device_types::has_dynamic_values
   настраиваемых параметров (только состояние on/off)
 end note
 
+footer PlantUML v.%version()
 @enduml

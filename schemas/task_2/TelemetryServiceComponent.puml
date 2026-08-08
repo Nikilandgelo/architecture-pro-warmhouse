@@ -57,4 +57,5 @@ Rel_R(telemetry_nats_publisher, nats, "Produce", $tags="broker_routes")
 
 Rel(telemetry_repo, click, "SQL", $tags="storage_route")
 
+footer PlantUML v.%version(), C4-PlantUML v.C4Version()
 @enduml

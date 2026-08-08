@@ -80,4 +80,5 @@ Rel_U(automation_engine, nats, "Consume telemetry events & Produce commands for 
 Rel_U(automation_engine, nats, "Check device ownership", "NATS KV", $tags="kv_route")
 
 
+footer PlantUML v.%version(), C4-PlantUML v.C4Version()
 @enduml
