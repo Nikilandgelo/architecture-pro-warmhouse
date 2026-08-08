@@ -1,0 +1,21 @@
+[project]
+name = "telemetry"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Nikita Selivanov",email = "flgjkdoged228@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "fastapi[all] (>=0.141.1,<0.142.0)",
+    "nats-py (>=2.15.0,<3.0.0)",
+    "clickhouse-connect[async] (>=1.6.0,<2.0.0)"
+]
+
+[tool.poetry]
+packages = [{include = "telemetry", from = "src"}]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
