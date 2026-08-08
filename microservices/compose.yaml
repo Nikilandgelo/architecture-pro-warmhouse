@@ -10,14 +10,6 @@ x-default_postgres_settings: &default_postgres_settings
     test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_PASSWORD -d $$POSTGRES_DB" ]
     <<: *healthcheck_parameters
 
-x-nats_default_envs: &nats_default_envs
-  NATS_URL: nats://smarthouse_nats:4222
-  NATS_COMMANDS_STREAM: COMMANDS
-  NATS_EVENTS_STREAM: EVENTS
-  NATS_KEY_VALUE: DEVICES
-  MAX_TASKS_PER_WORKER: 10
-  FASTSTREAM_SUPERVISOR_DISABLED: 1
-
 x-nats_dependencies: &nats_dependencies
   smarthouse_nats:
     condition: service_healthy
@@ -27,6 +19,14 @@ x-nats_dependencies: &nats_dependencies
 x-base_envs: &base_envs
   DEBUG: ${DEBUG}
   JWT_HS_256_SECRET_KEY: ${JWT_HS_256_SECRET_KEY}
+
+x-nats_default_envs: &nats_default_envs
+  NATS_URL: nats://smarthouse_nats:4222
+  NATS_COMMANDS_STREAM: COMMANDS
+  NATS_EVENTS_STREAM: EVENTS
+  NATS_KEY_VALUE: DEVICES
+  MAX_TASKS_PER_WORKER: 10
+  FASTSTREAM_SUPERVISOR_DISABLED: 1
 
 services:
   smarthouse_nats:

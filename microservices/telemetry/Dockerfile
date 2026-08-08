@@ -1,5 +1,6 @@
 FROM python:3-alpine
 LABEL authors="nikilandgelo"
+ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
