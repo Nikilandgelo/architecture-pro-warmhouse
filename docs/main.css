@@ -1,0 +1,130 @@
+:root {
+    --bg: #ffffff;
+    --surface: #f6f5f2;
+    --text-primary: #1a1a1a;
+    --text-secondary: #6b6a66;
+    --border: #e2e0da;
+    --border-strong: #c9c7bf;
+    --accent: #185fa5;
+}
+
+[data-theme="dark"] {
+    --bg: #17171a;
+    --surface: #1f1f23;
+    --text-primary: #f1f0ec;
+    --text-secondary: #a3a29c;
+    --border: #33333a;
+    --border-strong: #46454d;
+    --accent: #85b7eb;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    color-scheme: light dark;
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 400;
+}
+
+body {
+    padding: 3rem 1.5rem;
+    background: var(--bg);
+    color: var(--text-primary);
+    line-height: 1.6;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.container {
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+h1 {
+    font-size: 22px;
+    font-weight: 500;
+}
+
+.theme-toggle {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 14px;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.theme-toggle:hover {
+    border-color: var(--border-strong);
+}
+
+.doc-item {
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    background: var(--surface);
+}
+
+.doc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.doc-title {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.doc-chevron {
+    font-size: 13px;
+    color: var(--text-secondary);
+    transition: transform 0.2s ease;
+}
+
+.doc-item.open .doc-chevron {
+    transform: rotate(180deg);
+}
+
+.doc-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease;
+}
+
+.doc-item.open .doc-body {
+    max-height: 200px;
+}
+
+.doc-body-inner {
+    padding: 0 1.25rem 1.25rem;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.doc-body-inner a {
+    display: inline-block;
+    margin-top: 8px;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.doc-body-inner a:hover {
+    text-decoration: underline;
+}
