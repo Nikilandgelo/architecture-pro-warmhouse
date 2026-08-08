@@ -63,7 +63,6 @@ app.mount(
                 "email": "niki_landgelo@outlook.com"
             },
         ),
-        sidebar=False,
         try_it_out_path=None
     )
 )
