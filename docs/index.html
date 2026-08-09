@@ -3,49 +3,138 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="color-scheme" content="light dark">
+        <title>WarmHouse</title>
+
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
-        <link href="main.css" rel="stylesheet">
-        <script type="application/javascript" src="main.js" defer></script>
-        <title>WarmHouse</title>
+
+        <link href="src/main.css" rel="stylesheet">
+        <script type="application/javascript" src="dist/main.js" defer></script>
     </head>
 
     <body>
+
         <div class="container">
             <div class="top-row">
                 <h1>WarmHouse</h1>
                 <button class="theme-toggle" id="theme-toggle">☀️</button>
             </div>
 
-            <div class="doc-item" data-target="openapi">
+            <div class="doc-item service-item">
                 <div class="doc-header">
-                    <p class="doc-title">OpenAPI (REST)</p>
+                    <p class="doc-title">Сервис Управления устройствами</p>
                     <span class="doc-chevron">&#9660;</span>
                 </div>
+
                 <div class="doc-body">
                     <div class="doc-body-inner">
-                        REST API reference for device registration, status updates and ownership checks.
-                        <br>
-                        <a href="./device_management/openapi.html">Open OpenAPI docs &#8594;</a>
+
+                        <div class="doc-item sub-item">
+                            <div class="doc-header">
+                                <p class="doc-title">OpenAPI (REST)</p>
+                                <span class="doc-chevron">&#9660;</span>
+                            </div>
+                            <div class="doc-body">
+                                <div class="doc-body-inner">
+                                    <a href="./device_management/openapi.html">Open OpenAPI Reference &#8594;</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="doc-item sub-item">
+                            <div class="doc-header">
+                                <p class="doc-title">AsyncAPI</p>
+                                <span class="doc-chevron">&#9660;</span>
+                            </div>
+                            <div class="doc-body">
+                                <div class="doc-body-inner">
+                                    <a href="./device_management/asyncapi/asyncapi.html">Open AsyncAPI Reference &#8594;</a>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
 
-            <div class="doc-item" data-target="asyncapi">
+            <div class="doc-item service-item">
                 <div class="doc-header">
-                    <p class="doc-title">AsyncAPI (NATS commands/events)</p>
+                    <p class="doc-title">Сервис Сбора Телеметрии</p>
                     <span class="doc-chevron">&#9660;</span>
                 </div>
+
                 <div class="doc-body">
                     <div class="doc-body-inner">
-                        NATS JetStream commands and events for device activity status and target value changes.
-                        <br>
-                        <a href="./device_management/asyncapi/asyncapi.html">Open AsyncAPI docs &#8594;</a>
+
+                        <div class="doc-item sub-item">
+                            <div class="doc-header">
+                                <p class="doc-title">OpenAPI (REST)</p>
+                                <span class="doc-chevron">&#9660;</span>
+                            </div>
+                            <div class="doc-body">
+                                <div class="doc-body-inner">
+                                    <a href=".">Open OpenAPI Reference &#8594;</a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="doc-item service-item">
+                <div class="doc-header">
+                    <p class="doc-title">Сервис Видеонаблюдения</p>
+                    <span class="doc-chevron">&#9660;</span>
+                </div>
+
+                <div class="doc-body">
+                    <div class="doc-body-inner">
+
+                        <div class="doc-item sub-item">
+                            <div class="doc-header">
+                                <p class="doc-title">OpenAPI (REST)</p>
+                                <span class="doc-chevron">&#9660;</span>
+                            </div>
+                            <div class="doc-body">
+                                <div class="doc-body-inner">
+                                    <a href=".">Open OpenAPI Reference &#8594;</a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="doc-item service-item">
+                <div class="doc-header">
+                    <p class="doc-title">Сервис Сценариев Автоматизации</p>
+                    <span class="doc-chevron">&#9660;</span>
+                </div>
+
+                <div class="doc-body">
+                    <div class="doc-body-inner">
+
+                        <div class="doc-item sub-item">
+                            <div class="doc-header">
+                                <p class="doc-title">OpenAPI (REST)</p>
+                                <span class="doc-chevron">&#9660;</span>
+                            </div>
+                            <div class="doc-body">
+                                <div class="doc-body-inner">
+                                    <a href=".">Open OpenAPI Reference &#8594;</a>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
         </div>
+
     </body>
 
 </html>

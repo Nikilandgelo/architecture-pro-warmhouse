@@ -1,6 +1,7 @@
 :root {
     --bg: #ffffff;
     --surface: #f6f5f2;
+    --surface-sub: #ffffff;
     --text-primary: #1a1a1a;
     --text-secondary: #6b6a66;
     --border: #e2e0da;
@@ -11,6 +12,7 @@
 [data-theme="dark"] {
     --bg: #17171a;
     --surface: #1f1f23;
+    --surface-sub: #17171a;
     --text-primary: #f1f0ec;
     --text-secondary: #a3a29c;
     --border: #33333a;
@@ -25,17 +27,17 @@
 }
 
 html {
-    color-scheme: light dark;
     font-family: "JetBrains Mono", monospace;
     font-weight: 400;
+    font-size: 16px;
+    line-height: 1.5;
 }
 
 body {
     padding: 3rem 1.5rem;
     background: var(--bg);
     color: var(--text-primary);
-    line-height: 1.6;
-    transition: background 0.2s ease, color 0.2s ease;
+    transition: background 0.25s ease, color 0.25s ease;
 }
 
 .container {
@@ -47,17 +49,17 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 2rem;
+    margin-bottom: 3rem;
 }
 
 h1 {
-    font-size: 22px;
-    font-weight: 500;
+    font-size: 24px;
+    font-weight: 600;
 }
 
 .theme-toggle {
     background: var(--surface);
-    border: 0.5px solid var(--border);
+    border: 1px solid var(--border);
     border-radius: 8px;
     padding: 8px 14px;
     font-size: 14px;
@@ -70,11 +72,17 @@ h1 {
 }
 
 .doc-item {
-    border: 0.5px solid var(--border);
+    border: 1px solid var(--border);
     border-radius: 12px;
     margin-bottom: 12px;
     overflow: hidden;
     background: var(--surface);
+}
+
+.doc-item.sub-item {
+    background: var(--surface-sub);
+    margin-top: 10px;
+    margin-bottom: 0;
 }
 
 .doc-header {
@@ -84,35 +92,49 @@ h1 {
     padding: 1rem 1.25rem;
     cursor: pointer;
     user-select: none;
+    -webkit-user-select: none;
 }
 
-.doc-title {
-    font-size: 16px;
+.service-item > .doc-header .doc-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.sub-item > .doc-header .doc-title {
+    font-size: 15px;
     font-weight: 500;
 }
 
 .doc-chevron {
     font-size: 13px;
     color: var(--text-secondary);
-    transition: transform 0.2s ease;
+    transition: transform 0.25s ease;
 }
 
-.doc-item.open .doc-chevron {
+.doc-item.open > .doc-header .doc-chevron {
     transform: rotate(180deg);
 }
 
 .doc-body {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.2s ease;
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.25s ease;
 }
 
-.doc-item.open .doc-body {
-    max-height: 200px;
+.doc-item.open > .doc-body {
+    grid-template-rows: 1fr;
 }
 
 .doc-body-inner {
-    padding: 0 1.25rem 1.25rem;
+    overflow: hidden;
+    padding: 0 1.25rem;
+}
+
+.doc-item.open > .doc-body > .doc-body-inner {
+    padding-bottom: 1.25rem;
+}
+
+.sub-item .doc-body-inner {
     font-size: 14px;
     color: var(--text-secondary);
 }
