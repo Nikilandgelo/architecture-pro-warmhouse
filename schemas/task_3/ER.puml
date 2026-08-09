@@ -20,8 +20,9 @@ database "Device Management DB (PostgreSQL)" #E3F2FD {
       * created_at : TIMESTAMP
       updated_at : TIMESTAMP
       * is_deleted : BOOL <<default false>>
-      * command : VARCHAR
       * type_id : INT <<FK>>
+      * command : VARCHAR
+      command_extra_data : JSONB
     }
 
     entity "device_types" as device_types {
@@ -78,6 +79,7 @@ database "Automation Engine DB (PostgreSQL)" #E3F2FD {
         * scenario_id : INT <<FK>>
         * target_serial_number : VARCHAR
         * action_command : VARCHAR
+        action_command_extra_data : JSONB
     }
 }
 
@@ -110,7 +112,7 @@ devices ||..o{ scenarios : "trigger_serial_number (no FK)"
 note left of scenarios_actions::action_command
     Команда для target_serial_number достается
     через REST вызов фронта к Device Management Service
-    (allowed_commands по type_id target устройства)
+    (таблица allowed_commands по type_id target устройства)
 end note
 
 

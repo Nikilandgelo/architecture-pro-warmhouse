@@ -32,7 +32,7 @@ services:
   smarthouse_nats:
     image: nats:2-alpine
     container_name: smarthouse_nats
-    command: nats-server --jetstream --debug --http_port 8222 --server_name warmhouse_nats
+    command: nats-server --jetstream --debug --http_port 8222 --server_name warmhouse_nats --store_dir /data
     ports:
       - ${NATS_PORT}:4222
       - ${NATS_HTTP_PORT}:8222
