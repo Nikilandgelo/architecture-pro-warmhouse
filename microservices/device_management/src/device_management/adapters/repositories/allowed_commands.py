@@ -12,8 +12,9 @@ class AllowedCommandsRepository:
                 select(
                     AllowedCommands.id,
                     AllowedCommands.created_at,
+                    AllowedCommands.type_id,
                     AllowedCommands.command,
-                    AllowedCommands.type_id
+                    AllowedCommands.command_extra_data
                 )
                 .where(
                     AllowedCommands.type_id == type_id,

@@ -2,7 +2,8 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import (
-    func, String, Text, Identity, Boolean, ForeignKey, Double, UUID, DateTime, Index, text
+    func, String, Text, Identity, Boolean, ForeignKey, Double, UUID, DateTime, Index, text,
+    UniqueConstraint
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -137,6 +138,9 @@ class Devices(Base):
 
 class AllowedCommands(Base):
     __tablename__ = "allowed_commands"
+    __table_args__ = (
+        UniqueConstraint("type_id", "command", name="allowed_commands_type_id_command_key"),
+    )
 
     id: Mapped[int] = mapped_column(Identity(always=True), primary_key=True)
     created_at: Mapped[datetime] = mapped_column(
@@ -156,15 +160,15 @@ class AllowedCommands(Base):
         default=False,
         comment="Soft-delete flag indicating whether the command is considered deleted."
     )
-    command: Mapped[str] = mapped_column(
-        Text(),
-        nullable=False,
-        unique=True,
-        comment="Unique command that is allowed and can be proceed for a specific device type."
-    )
     type_id: Mapped[int] = mapped_column(
         ForeignKey("device_types.id"),
         nullable=False,
         index=True,
         comment="Reference to the device type for which this command is allowed."
     )
+    command: Mapped[str] = mapped_column(
+        Text(),
+        nullable=False,
+        comment="Unique command that is allowed and can be proceed for a specific device type."
+    )
+    command_extra_data: Mapped[dict | None] = mapped_column(JSONB)

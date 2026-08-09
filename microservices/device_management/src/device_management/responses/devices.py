@@ -10,6 +10,7 @@ class DevicesResponse(BaseModel):
     owner_id: UUID
     device_name: str
     serial_number: str
+    type_id: int
     name: str
     manufacturer: str
     installation_status: str

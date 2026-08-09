@@ -49,8 +49,11 @@ CREATE TABLE IF NOT EXISTS allowed_commands (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     is_deleted BOOLEAN NOT NULL DEFAULT false,
-    command TEXT NOT NULL UNIQUE,
-    type_id INT REFERENCES device_types (id) NOT NULL
+    type_id INT REFERENCES device_types (id) NOT NULL,
+    command TEXT NOT NULL,
+    command_extra_data JSONB,
+
+    UNIQUE (type_id, command)
 );
 
 CREATE INDEX ix_allowed_commands_created_at ON allowed_commands USING btree (created_at);
@@ -85,4 +88,21 @@ VALUES
     ('Bulb', 'Philips Hue', 'MQTT', '%', true),
     ('Automatic Gate', 'Came', 'HTTP', NULL, false),
     ('Video Camera', 'Hikvision', 'RTSP', NULL, false)
+;
+
+INSERT INTO allowed_commands (type_id, command, command_extra_data)
+VALUES
+    (1, 'Turn Off', '{"subject": "COMMANDS.devices.activity_status", "activity_status": "off"}'),
+    (1, 'Turn On', '{"subject": "COMMANDS.devices.activity_status", "activity_status": "on"}'),
+    (1, 'Change Value', '{"subject": "COMMANDS.devices.dynamic_target_value"}'),
+    (2, 'Turn Off', '{"subject": "COMMANDS.devices.activity_status", "activity_status": "off"}'),
+    (2, 'Turn On', '{"subject": "COMMANDS.devices.activity_status", "activity_status": "on"}'),
+    (2, 'Change Value', '{"subject": "COMMANDS.devices.dynamic_target_value"}'),
+    (3, 'Turn Off', '{"subject": "COMMANDS.devices.activity_status", "activity_status": "off"}'),
+    (3, 'Turn On', '{"subject": "COMMANDS.devices.activity_status", "activity_status": "on"}'),
+    (3, 'Change Value', '{"subject": "COMMANDS.devices.dynamic_target_value"}'),
+    (4, 'Turn Off', '{"subject": "COMMANDS.devices.activity_status", "activity_status": "off"}'),
+    (4, 'Turn On', '{"subject": "COMMANDS.devices.activity_status", "activity_status": "on"}'),
+    (5, 'Turn Off', '{"subject": "COMMANDS.devices.activity_status", "activity_status": "off"}'),
+    (5, 'Turn On', '{"subject": "COMMANDS.devices.activity_status", "activity_status": "on"}')
 ;
