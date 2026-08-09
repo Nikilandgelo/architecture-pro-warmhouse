@@ -155,6 +155,12 @@ services:
     environment:
       <<: [ *base_envs, *nats_default_envs ]
       APP_PORT: ${TELEMETRY_PORT}
+      CLICK_USER: ${CLICKHOUSE_USER}
+      CLICK_PASSWORD: ${CLICKHOUSE_PASSWORD}
+      CLICK_HOSTNAME: telemetry_clickhouse
+      CLICK_PORT: 8123
+      CLICK_DB_NAME: telemetry_database
+      DEVICES_TOKEN: ${DEVICES_TOKEN}
     ports:
       - ${TELEMETRY_PORT}:${TELEMETRY_PORT}
     volumes:

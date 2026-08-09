@@ -1,3 +1,71 @@
-from fastapi import FastAPI
+from contextlib import asynccontextmanager
 
-app = FastAPI()
+from fastapi import FastAPI
+from faststream.asgi import make_ping_asgi, make_asyncapi_asgi
+from faststream.nats import NatsBroker
+from faststream.specification import AsyncAPI
+
+from telemetry.adapters.clickhouse import clickhouse_adapter
+from telemetry.adapters.nats import (
+    devices_kv_store,
+    error_callback,
+    disconnected_callback,
+    closed_callback,
+    reconnected_callback,
+)
+from telemetry.api import api_router
+from telemetry.broker import events_router
+from telemetry.loggers import service_logger
+from telemetry.settings import settings
+
+broker = NatsBroker(
+    servers=settings.nats_url,
+    name="Telemetry",
+    error_cb=error_callback,
+    disconnected_cb=disconnected_callback,
+    closed_cb=closed_callback,
+    reconnected_cb=reconnected_callback
+)
+broker.include_router(events_router)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    service_logger.info("Starting FastAPI, other things...")
+    await devices_kv_store.startup()
+    await clickhouse_adapter.startup()
+    async with broker:
+        await broker.start()
+        yield
+
+    service_logger.info("Stopping FastAPI, other things...")
+    await devices_kv_store.shutdown()
+    await clickhouse_adapter.shutdown()
+
+app = FastAPI(
+    title="Telemetry API",
+    lifespan=lifespan,
+    version="1.0",
+    contact={
+        "name": "Nikita Selivanov",
+        "email": "niki_landgelo@outlook.com"
+    },
+)
+app.include_router(api_router)
+
+app.mount("/health", make_ping_asgi(broker, timeout=5.0))
+app.mount(
+    "/asyncapi",
+    make_asyncapi_asgi(
+        AsyncAPI(
+            broker,
+            title="Telemetry Broker",
+            version="1.0",
+            contact={
+                "name": "Nikita Selivanov",
+                "email": "niki_landgelo@outlook.com"
+            },
+        ),
+        try_it_out_path=None
+    )
+)
