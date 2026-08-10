@@ -92,17 +92,17 @@ VALUES
 
 INSERT INTO allowed_commands (type_id, command, command_extra_data)
 VALUES
-    (1, 'Turn Off', '{"subject": "COMMANDS.devices.activity_status", "activity_status": "off"}'),
-    (1, 'Turn On', '{"subject": "COMMANDS.devices.activity_status", "activity_status": "on"}'),
-    (1, 'Change Value', '{"subject": "COMMANDS.devices.dynamic_target_value"}'),
-    (2, 'Turn Off', '{"subject": "COMMANDS.devices.activity_status", "activity_status": "off"}'),
-    (2, 'Turn On', '{"subject": "COMMANDS.devices.activity_status", "activity_status": "on"}'),
-    (2, 'Change Value', '{"subject": "COMMANDS.devices.dynamic_target_value"}'),
-    (3, 'Turn Off', '{"subject": "COMMANDS.devices.activity_status", "activity_status": "off"}'),
-    (3, 'Turn On', '{"subject": "COMMANDS.devices.activity_status", "activity_status": "on"}'),
-    (3, 'Change Value', '{"subject": "COMMANDS.devices.dynamic_target_value"}'),
-    (4, 'Turn Off', '{"subject": "COMMANDS.devices.activity_status", "activity_status": "off"}'),
-    (4, 'Turn On', '{"subject": "COMMANDS.devices.activity_status", "activity_status": "on"}'),
-    (5, 'Turn Off', '{"subject": "COMMANDS.devices.activity_status", "activity_status": "off"}'),
-    (5, 'Turn On', '{"subject": "COMMANDS.devices.activity_status", "activity_status": "on"}')
+    (1, 'Turn Off', '{"subject": ".devices.activity_status", "additional_data": {"activity_status": "off"}}'),
+    (1, 'Turn On', '{"subject": ".devices.activity_status", "additional_data": {"activity_status": "on"}}'),
+    (1, 'Change Value', '{"subject": ".devices.dynamic_target_value", "additional_data": {"new_value": 15.0}}'),
+    (2, 'Turn Off', '{"subject": ".devices.activity_status", "additional_data": {"activity_status": "off"}}'),
+    (2, 'Turn On', '{"subject": ".devices.activity_status", "additional_data": {"activity_status": "on"}}'),
+    (2, 'Change Value', '{"subject": ".devices.dynamic_target_value", "additional_data": {"new_value": 15.0}}'),
+    (3, 'Turn Off', '{"subject": ".devices.activity_status", "additional_data": {"activity_status": "off"}}'),
+    (3, 'Turn On', '{"subject": ".devices.activity_status", "additional_data": {"activity_status": "on"}}'),
+    (3, 'Change Value', '{"subject": ".devices.dynamic_target_value", "additional_data": {"new_value": 15.0}}'),
+    (4, 'Turn Off', '{"subject": ".devices.activity_status", "additional_data": {"activity_status": "off"}}'),
+    (4, 'Turn On', '{"subject": ".devices.activity_status", "additional_data": {"activity_status": "on"}}'),
+    (5, 'Turn Off', '{"subject": ".devices.activity_status", "additional_data": {"activity_status": "off"}}'),
+    (5, 'Turn On', '{"subject": ".devices.activity_status", "additional_data": {"activity_status": "on"}}')
 ;
