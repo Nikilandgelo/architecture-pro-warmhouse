@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS scenarios_actions (
     is_deleted BOOLEAN NOT NULL DEFAULT false,
     scenario_id INT REFERENCES scenarios (id) NOT NULL,
     target_serial_number TEXT NOT NULL,
-    action_command TEXT NOT NULL
+    action_command TEXT NOT NULL,
+    action_command_extra_data JSONB
 );
 
 CREATE INDEX ix_scenarios_actions_created_at ON scenarios_actions USING btree (created_at);
