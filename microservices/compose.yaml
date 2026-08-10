@@ -171,8 +171,13 @@ services:
       context: ./video_monitoring
     container_name: video_monitoring
     environment:
-      <<: *base_envs
+      <<: [ *base_envs, *nats_default_envs ]
       APP_PORT: ${VIDEOMONITORING_PORT}
+      S3_BUCKET: ${S3_BUCKET}
+      S3_REGION: ${S3_REGION}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_ENDPOINT_URL: ${S3_ENDPOINT_URL}
     ports:
       - ${VIDEOMONITORING_PORT}:${VIDEOMONITORING_PORT}
     volumes:
