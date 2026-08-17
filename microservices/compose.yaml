@@ -1,0 +1,191 @@
+x-healthcheck_parameters: &healthcheck_parameters
+  interval: 5s
+  timeout: 3s
+  retries: 3
+
+x-default_postgres_settings: &default_postgres_settings
+  image: postgres:18-alpine
+  restart: unless-stopped
+  healthcheck:
+    test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_PASSWORD -d $$POSTGRES_DB" ]
+    <<: *healthcheck_parameters
+
+x-nats_dependencies: &nats_dependencies
+  smarthouse_nats:
+    condition: service_healthy
+  smarthouse_nats_init:
+    condition: service_completed_successfully
+
+x-base_envs: &base_envs
+  DEBUG: ${DEBUG}
+  JWT_HS_256_SECRET_KEY: ${JWT_HS_256_SECRET_KEY}
+
+x-nats_default_envs: &nats_default_envs
+  NATS_URL: nats://smarthouse_nats:4222
+  NATS_COMMANDS_STREAM: COMMANDS
+  NATS_EVENTS_STREAM: EVENTS
+  NATS_KEY_VALUE: DEVICES
+  MAX_TASKS_PER_WORKER: 10
+  FASTSTREAM_SUPERVISOR_DISABLED: 1
+
+services:
+  smarthouse_nats:
+    image: nats:2-alpine
+    container_name: smarthouse_nats
+    command: nats-server --jetstream --debug --http_port 8222 --server_name warmhouse_nats --store_dir /data
+    ports:
+      - ${NATS_PORT}:4222
+      - ${NATS_HTTP_PORT}:8222
+    volumes:
+      - smarthouse_nats_nats_data:/data
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "-O", "-", "http://localhost:8222/healthz" ]
+      <<: *healthcheck_parameters
+    restart: unless-stopped
+
+  smarthouse_nats_init:
+    image: natsio/nats-box:latest
+    container_name: smarthouse_nats_init
+    depends_on:
+      smarthouse_nats:
+        condition: service_healthy
+    volumes:
+      - ./nats/init.sh:/init.sh:ro
+    entrypoint: [ "/bin/sh", "/init.sh" ]
+    restart: "no"
+
+  device_management_db:
+    <<: *default_postgres_settings
+    container_name: device_management_db
+    environment:
+      POSTGRES_USER: ${DEVICE_MANAGEMENT_DB_USER}
+      POSTGRES_PASSWORD: ${DEVICE_MANAGEMENT_DB_PASSWORD}
+      POSTGRES_DB: ${DEVICE_MANAGEMENT_DB}
+    ports:
+      - ${DEVICE_MANAGEMENT_DB_PORT}:5432
+    volumes:
+      - device_management_db_data:/var/lib/postgresql
+      - ./device_management/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  automation_engine_db:
+    <<: *default_postgres_settings
+    container_name: automation_engine_db
+    environment:
+      POSTGRES_USER: ${AUTOMATION_ENGINE_DB_USER}
+      POSTGRES_PASSWORD: ${AUTOMATION_ENGINE_DB_PASSWORD}
+      POSTGRES_DB: ${AUTOMATION_ENGINE_DB}
+    ports:
+      - ${AUTOMATION_ENGINE_DB_PORT}:5432
+    volumes:
+      - automation_engine_db_data:/var/lib/postgresql
+      - ./automation_engine/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  telemetry_clickhouse:
+    image: clickhouse:26.7
+    container_name: telemetry_clickhouse
+    environment:
+      CLICKHOUSE_DB: telemetry_database
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: ${CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+    ports:
+      - ${CLICKHOUSE_HTTP_PORT}:8123
+      - ${CLICKHOUSE_PORT}:9000
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse/
+      - clickhouse_logs:/var/log/clickhouse-server/
+      - ./telemetry/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: [ "CMD", "clickhouse-client", "--user", "${CLICKHOUSE_USER}", "--password", "${CLICKHOUSE_PASSWORD}", "--query", "SELECT 1" ]
+      <<: *healthcheck_parameters
+    restart: unless-stopped
+
+
+
+  automation_engine:
+    build:
+      context: ./automation_engine
+    container_name: automation_engine
+    depends_on:
+      automation_engine_db:
+        condition: service_healthy
+      <<: *nats_dependencies
+    environment:
+      <<: [*base_envs, *nats_default_envs]
+      APP_PORT: ${AUTOMATION_ENGINE_PORT}
+      DB_USER: ${AUTOMATION_ENGINE_DB_USER}
+      DB_PASSWORD: ${AUTOMATION_ENGINE_DB_PASSWORD}
+      DB_HOSTNAME: automation_engine_db
+      DB_PORT: 5432
+      DB_NAME: ${AUTOMATION_ENGINE_DB}
+    ports:
+        - ${AUTOMATION_ENGINE_PORT}:${AUTOMATION_ENGINE_PORT}
+    volumes:
+        - ./automation_engine/src/:/app
+
+  device_management:
+    build:
+      context: ./device_management
+    container_name: device_management
+    depends_on:
+      device_management_db:
+        condition: service_healthy
+      <<: *nats_dependencies
+    environment:
+      <<: [*base_envs, *nats_default_envs]
+      APP_PORT: ${DEVICE_MANAGEMENT_PORT}
+      DB_USER: ${DEVICE_MANAGEMENT_DB_USER}
+      DB_PASSWORD: ${DEVICE_MANAGEMENT_DB_PASSWORD}
+      DB_HOSTNAME: device_management_db
+      DB_PORT: 5432
+      DB_NAME: ${DEVICE_MANAGEMENT_DB}
+    ports:
+      - ${DEVICE_MANAGEMENT_PORT}:${DEVICE_MANAGEMENT_PORT}
+    volumes:
+      - ./device_management/src/:/app
+
+  telemetry:
+    build:
+      context: ./telemetry
+    container_name: telemetry
+    depends_on:
+      telemetry_clickhouse:
+        condition: service_healthy
+      <<: *nats_dependencies
+    environment:
+      <<: [ *base_envs, *nats_default_envs ]
+      APP_PORT: ${TELEMETRY_PORT}
+      CLICK_USER: ${CLICKHOUSE_USER}
+      CLICK_PASSWORD: ${CLICKHOUSE_PASSWORD}
+      CLICK_HOSTNAME: telemetry_clickhouse
+      CLICK_PORT: 8123
+      CLICK_DB_NAME: telemetry_database
+      DEVICES_TOKEN: ${DEVICES_TOKEN}
+    ports:
+      - ${TELEMETRY_PORT}:${TELEMETRY_PORT}
+    volumes:
+      - ./telemetry/src/:/app
+
+  video_monitoring:
+    build:
+      context: ./video_monitoring
+    container_name: video_monitoring
+    environment:
+      <<: [ *base_envs, *nats_default_envs ]
+      APP_PORT: ${VIDEOMONITORING_PORT}
+      S3_BUCKET: ${S3_BUCKET}
+      S3_REGION: ${S3_REGION}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_ENDPOINT_URL: ${S3_ENDPOINT_URL}
+    ports:
+      - ${VIDEOMONITORING_PORT}:${VIDEOMONITORING_PORT}
+    volumes:
+      - ./video_monitoring/src/:/app
+
+volumes:
+  smarthouse_nats_nats_data:
+  device_management_db_data:
+  automation_engine_db_data:
+  clickhouse_data:
+  clickhouse_logs:

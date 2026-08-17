@@ -1,0 +1,93 @@
+@startuml
+!ROUNDED_STYLE=1
+!include <C4/C4_Component>
+!include <logos/nats>
+!include <logos/postgresql>
+LAYOUT_TOP_DOWN()
+
+
+AddRelTag("api_route", $textColor="cornflowerblue", $lineColor="cornflowerblue", $lineStyle = BoldLine())
+AddRelTag("broker_routes", $textColor="firebrick", $lineColor="firebrick", $lineStyle = SolidLine())
+AddRelTag("storage_route", $textColor="seagreen", $lineColor="seagreen", $lineStyle = DottedLine())
+AddRelTag("device_interaction", $textColor="mediumseagreen", $lineColor="mediumseagreen", $lineStyle = BoldLine())
+AddRelTag("kv_route", $textColor="darkorange", $lineColor="darkorange", $lineStyle = DashedLine())
+
+
+Container(api_gateway, "API Gateway", "Apache APISIX")
+ContainerQueue(nats, "Message Broker, Key & Value Store", "Nats", "", nats)
+ContainerDb(devices_postgresql, "Database", "PostgreSQL", "", postgresql)
+System_Ext(smart_device, "Система умных устройств", "Физические устройства партнера установленные у владельцев в домах")
+
+
+
+Container_Boundary(device_management, "Device Management Service") {
+    Component(device_api, "Device REST Controller", "FastAPI Router", "Регистрация, просмотр, деактивация устройств, смена статуса и показателей устройств")
+    Component(device_nats_consumer, "Command Consumer", "NATS JetStream Consumer", "Забирает команды на взаимодействие с умными устройствами из брокера")
+
+
+    Component(ownership_dep, "Ownership Check Dependency", "FastAPI Depends", "Проверка владения устройством перед чтением/изменением/удалением")
+
+
+    Component(device_registry_service, "Device Registry Service", "Python", "Списочное чтение устройств пользователя, регистрация нового устройства, синхронизация ownership KV при регистрации")
+    Component(device_management_service, "Device Management Service", "Python",  "Чтение/изменение/деактивация конкретного устройства, синхронизация ownership KV при деактивации, делегирует физическое взаимодействие при смене activity_status/dynamic_target_value")
+
+
+    Component(device_repo, "Device Repository", "SQLAlchemy (async)", "CRUD операций с устройствами")
+    Component(ownership_kv_client, "Ownership KV Client", "nats.py KV", "Put/Delete device serial_number -> owner_id при регистрации/деактивации")
+
+
+    Component(adapter_factory, "Device Adapter (Protocol)", "Python", "Абстрактный адаптер с выбором необходимой реализации под устройство. Новые реализации протокола наследуются от него")
+    Component(mqtt_adapter, "MQTT Adapter", "Python", "Реализация протокола MQTT")
+    Component(http_adapter, "HTTP Adapter", "Python", "Реализация протокола HTTP")
+}
+
+
+
+Rel(api_gateway, device_api, "REST API", $tags="api_route")
+Rel_U(nats, device_nats_consumer, "Consume on specific subject", $tags="broker_routes")
+
+
+Rel(device_api, device_registry_service, "Uses (списочное чтение устройств пользователя, регистрация нового устройства)")
+
+
+
+Rel(device_api, ownership_dep, "Uses (чтение/изменение/удаление конкретного устройства)")
+Rel_R(ownership_dep, nats, "NATS KV: Get by serial_number", $tags="kv_route")
+Rel(ownership_dep, device_management_service, "Uses")
+
+
+
+Rel(device_nats_consumer, device_repo, "Query device type from serial number", $tags="storage_route")
+Rel(device_nats_consumer, adapter_factory, "Uses (передаёт device + command)")
+
+
+
+Rel(device_registry_service, device_repo, "Query / Create", $tags="storage_route")
+Rel(device_registry_service, ownership_kv_client, "Put при регистрации")
+
+
+
+Rel(device_management_service, device_repo, "Query / Update", $tags="storage_route")
+Rel(device_management_service, ownership_kv_client, "Delete при деактивации")
+Rel_U(ownership_kv_client, nats, "NATS KV: Put/Delete serial_number -> owner_id", $tags="kv_route")
+
+
+
+Rel(device_management_service, adapter_factory, "Uses (передаёт device + command) при апдейте activity_status/dynamic_target_value")
+
+
+
+Rel(device_repo, devices_postgresql, "SQL", $tags="storage_route")
+
+
+
+Rel(adapter_factory, mqtt_adapter, "Creates")
+Rel(adapter_factory, http_adapter, "Creates")
+
+
+
+Rel(mqtt_adapter, smart_device, "MQTT", $tags="device_interaction")
+Rel(http_adapter, smart_device, "HTTP", $tags="device_interaction")
+
+footer PlantUML v.%version(), C4-PlantUML v.C4Version()
+@enduml

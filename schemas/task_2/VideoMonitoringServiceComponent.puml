@@ -1,0 +1,55 @@
+@startuml
+!ROUNDED_STYLE=1
+!include <C4/C4_Component>
+!include <logos/nats>
+LAYOUT_TOP_DOWN()
+
+
+AddRelTag("api_route", $textColor="cornflowerblue", $lineColor="cornflowerblue", $lineStyle = BoldLine())
+AddRelTag("storage_route", $textColor="seagreen", $lineColor="seagreen", $lineStyle = DottedLine())
+AddRelTag("device_interaction", $textColor="mediumseagreen", $lineColor="mediumseagreen", $lineStyle = BoldLine())
+AddRelTag("kv_route", $textColor="darkorange", $lineColor="darkorange", $lineStyle = DashedLine())
+
+
+
+Container(api_gateway, "API Gateway", "Apache APISIX")
+ContainerQueue(nats, "Message Broker, Key & Value Store", "Nats", "", nats)
+ContainerDb(s3_storage, "Object Storage", "S3", "")
+System_Ext(smart_device, "Система умных устройств", "Физические устройства партнера установленные у владельцев в домах")
+
+
+
+Container_Boundary(video_monitoring, "Video Monitoring Service") {
+    Component(video_api, "Video REST/WS Controller", "FastAPI Router + WebSocket", "Запросы live-потока и видеоархива")
+
+    Component(ownership_dep, "Ownership Check Dependency", "FastAPI Depends", "Проверка владения устройством перед доступом к видео")
+
+    Component(video_service, "Video Service", "Python", "Оркестрация live-сессий, листинг и выдача ссылок на записи архива")
+
+    Component(signaling, "WebRTC Signaling Component", "Python", "Установление потока с камерой")
+    Component(archive_repo, "Archive Repository", "aioboto3 / S3 client", "Листинг записей по префиксу {device_number}/, выдача ссылок на скачивание")
+}
+
+
+
+Rel(api_gateway, video_api, "WebSockets / REST API", $tags="api_route")
+
+
+
+Rel(video_api, ownership_dep, "Uses")
+Rel_R(ownership_dep, nats, "NATS KV: Get by serial_number", $tags="kv_route")
+Rel(ownership_dep, video_service, "Uses")
+
+
+
+Rel(video_service, signaling, "Initialize session")
+Rel(video_service, archive_repo, "List / Get download URL", $tags="storage_route")
+
+
+
+Rel(signaling, smart_device, "WebRTC", $tags="device_interaction")
+Rel(smart_device, s3_storage, "Запись c видеокамер напрямую", $tags="device_interaction")
+Rel(archive_repo, s3_storage, "S3 API", $tags="storage_route")
+
+footer PlantUML v.%version(), C4-PlantUML v.C4Version()
+@enduml

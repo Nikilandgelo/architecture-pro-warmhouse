@@ -1,0 +1,126 @@
+@startuml
+skinparam roundcorner 15
+
+package "Keycloak (Identity Provider)" #E8F5E9 {
+    entity "users" as users <<External>> {
+        * id : UUID <<PK>>
+        --
+        * email : VARCHAR
+        * username : VARCHAR
+        ...
+    }
+}
+
+
+database "Device Management DB (PostgreSQL)" #E3F2FD {
+
+    entity "allowed_commands" as allowed_commands {
+      * id : INT <<PK>>
+      --
+      * created_at : TIMESTAMP
+      updated_at : TIMESTAMP
+      * is_deleted : BOOL <<default false>>
+      * type_id : INT <<FK>>
+      * command : VARCHAR
+      command_extra_data : JSONB
+    }
+
+    entity "device_types" as device_types {
+      * id : INT <<PK>>
+      --
+      * created_at : TIMESTAMP
+      updated_at : TIMESTAMP
+      * name : VARCHAR
+      * manufacturer : VARCHAR
+      * interaction_protocol : VARCHAR
+      measurement_unit : VARCHAR
+      * has_dynamic_values : BOOL <<default false>>
+    }
+
+    entity "devices" as devices {
+      * id : UUID <<PK>>
+      --
+      * created_at : TIMESTAMP
+      updated_at : TIMESTAMP
+      * owner_id : UUID
+      * name : VARCHAR
+      * serial_number : VARCHAR <<unique>>
+      * type_id : INT <<FK>>
+      * installation_status : VARCHAR <<default active>>
+      * activity_status : VARCHAR <<default off>>
+      * location : VARCHAR
+      dynamic_target_value : FLOAT
+      metadata : JSONB
+    }
+}
+
+
+database "Automation Engine DB (PostgreSQL)" #E3F2FD {
+
+    entity "scenarios" as scenarios {
+          * id : INT <<PK>>
+          --
+          * created_at : TIMESTAMP
+          updated_at : TIMESTAMP
+          * is_deleted : BOOL <<default false>>
+          * is_enabled : BOOL <<default true>>
+          * owner_id : UUID
+          * name : VARCHAR
+          * trigger_serial_number : VARCHAR
+          conditions : JSONB
+        }
+
+    entity "scenarios_actions" as scenarios_actions {
+        * id : INT <<PK>>
+        --
+        * created_at : TIMESTAMP
+        updated_at : TIMESTAMP
+        * is_deleted : BOOL <<default false>>
+        * scenario_id : INT <<FK>>
+        * target_serial_number : VARCHAR
+        * action_command : VARCHAR
+        action_command_extra_data : JSONB
+    }
+}
+
+
+database "Telemetry DB (ClickHouse)" #FFF3E0 {
+
+    entity "telemetry_record" as telemetry_record {
+        * device_serial_number : VARCHAR <<Sort Key>>
+        * timestamp : DATETIME <<Sort Key>>
+        --
+        * device_location : VARCHAR
+        * metrics : MAP(VARCHAR, FLOAT64)
+        * states : MAP(VARCHAR, VARCHAR)
+    }
+}
+
+
+device_types ||--o{ devices : "One to many"
+device_types ||--o{ allowed_commands : "One to many"
+scenarios ||--o{ scenarios_actions : "One to many"
+
+users ||..o{ devices : "owner_id (JWT sub, no FK)"
+users ||..o{ scenarios : "owner_id (JWT sub, no FK)"
+
+devices ||..o{ telemetry_record : "device_serial_number (no FK)"
+devices ||..o{ scenarios_actions : "target_serial_number (no FK)"
+devices ||..o{ scenarios : "trigger_serial_number (no FK)"
+
+
+note left of scenarios_actions::action_command
+    Команда для target_serial_number достается
+    через REST вызов фронта к Device Management Service
+    (таблица allowed_commands по type_id target устройства)
+end note
+
+
+note right of device_types::has_dynamic_values
+  Поддерживает ли тип устройства пользовательские
+  настраиваемые значения. false — устройство без
+  настраиваемых параметров
+end note
+
+footer PlantUML v.%version()
+@enduml
